@@ -51,35 +51,3 @@ rhoM(truncated ~= 0) = truncated(truncated ~= 0) .* rhoM(truncated ~= 0);
 
 
 
-mask_tmp = mask_p;
-fun = @(block_struct)processBlock(block_struct.data);
-
-% 去掉DCT系数错误块的模拟嵌入
-c = cat(3, mask_tmp, truncation);
-mask_p1 = blockproc(c, [8, 8], fun);
-
-mask_p1_p = mask_p1;
-mask_p1_n = -mask_p1;
-
-
-
-
-simul_stego_p_coeff = rc_COEFF + mask_p1_p;
-simul_stego_n_coeff = rc_COEFF + mask_p1_n;
-
-fun = @(x) idct2(x.data.*q);
-simul_spa_p = blockproc(simul_stego_p_coeff,[8 8],fun);
-simul_spa_n = blockproc(simul_stego_n_coeff,[8 8],fun);
-
-
-overflow_piexl2 = zeros(size(simul_spa_p));
-
-overflow_piexl2(simul_spa_p>127) = 1;
-overflow_piexl2(simul_spa_n<-128) = 1;
-
-threshold = 1; %
-fun = @(block_struct)truncated_boost(block_struct.data, threshold);
-truncated = blockproc(overflow_piexl2, [8, 8], fun);
-rhoP(truncated ~= 0) = truncated(truncated ~= 0) .* rhoP(truncated ~= 0);
-rhoM(truncated ~= 0) = truncated(truncated ~= 0) .* rhoM(truncated ~= 0);
-
